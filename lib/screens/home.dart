@@ -2,17 +2,39 @@ import 'package:ahgora/models/user.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 class Home extends StatefulWidget {
   @override
   _HomeState createState() => _HomeState();
 }
 
 class _HomeState extends State<Home> {
-  final _user = User();
+  var _user = User();
   final _formKey = GlobalKey<FormState>();
   final _tokenNode = FocusNode();
   final _userNode = FocusNode();
   final _passwordNode = FocusNode();
+
+  @override
+  void initState() {
+    fetchUserFromPreferences();
+    super.initState();
+  }
+
+  Future<String> fetchUserFromPreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+    var user = User();
+    user.identity = prefs.getString(User.tokenKey);
+    user.account = prefs.getString(User.loginKey);
+    user.password = prefs.getString(User.passwordKey);
+    
+    setState(() {
+      _user = user;
+    });
+
+    return 'Success';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,6 +74,7 @@ class _HomeState extends State<Home> {
                             border: OutlineInputBorder(),
                             labelText: 'Chave Ahgora',
                           ),
+                          controller: TextEditingController(text: _user.identity),
                           validator: (value) {
                             return value.isEmpty
                                 ? 'Preencha com a chave obtida no localStorage em seu navegador já autenticado.'
@@ -76,6 +99,7 @@ class _HomeState extends State<Home> {
                           decoration: InputDecoration(
                               border: OutlineInputBorder(),
                               labelText: 'Usuário'),
+                          controller: TextEditingController(text: _user.account),
                           validator: (value) {
                             return value.isEmpty ? 'Preencha o usuário.' : null;
                           },
@@ -94,6 +118,7 @@ class _HomeState extends State<Home> {
                           },
                           decoration: InputDecoration(
                               border: OutlineInputBorder(), labelText: 'Senha'),
+                          controller: TextEditingController(text: _user.password),
                           validator: (value) {
                             return value.isEmpty ? 'Preencha a senha.' : null;
                           },
@@ -109,12 +134,19 @@ class _HomeState extends State<Home> {
                             if (form.validate()) {
                               form.save();
                               _user.register().then((response) {
-                                if (response.statusCode == 200 && json.decode(response.body).error != true) {
-                                  final snackbar = SnackBar(content: Text('Ponto registrado'));
+                                final body = json.decode(response.body);
+                                if (response.statusCode == 200 && body.containsKey('result') && body['result'] == true) {
+                                  var batidas = '';
+                                  if (body.containsKey('batidas_dia')) {
+                                    for (var i = 0; i < body['batidas_dia'].length; i++) {
+                                      batidas += batidas + '   ' + body['batidas_dia'][i];
+                                    }
+                                  }
+                                  final snackbar = SnackBar(content: Text('Ponto registrado - ' + batidas));
                                   Scaffold.of(context).showSnackBar(snackbar);
                                 }
                                 else {
-                                  final snackbar = SnackBar(content: Text('Erro ao bater ponto, confira os dados. Mensagem: ' + json.decode(response.body).message));
+                                  final snackbar = SnackBar(content: Text('Erro ao bater ponto, confira os dados. Mensagem: ' + (body.containsKey('reason') ? body['reason'] : '')));
                                   Scaffold.of(context).showSnackBar(snackbar);
                                 }
                               });

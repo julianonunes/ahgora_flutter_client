@@ -5,20 +5,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
 class User {
-  final tokenKey = 'token_key';
-  final loginKey = 'login_key';
-  final passwordKey = 'password_key';
+  static final tokenKey = 'token_key';
+  static final loginKey = 'login_key';
+  static final passwordKey = 'password_key';
 
   String identity;
   String account;
   String password;
-
-  read() async {
-    final prefs = await SharedPreferences.getInstance();
-    identity = prefs.getString(tokenKey);
-    account = prefs.getString(loginKey);
-    password = prefs.getString(passwordKey);
-  }
 
   Future<http.Response> register() async {
     final prefs = await SharedPreferences.getInstance();
@@ -28,15 +21,13 @@ class User {
     
     final response = await http.post('https://www.ahgora.com.br/batidaonline/verifyIdentification',
       headers: {
-          HttpHeaders.contentTypeHeader: 'application/json',
-          HttpHeaders.authorizationHeader : ''
+          HttpHeaders.contentTypeHeader: 'multipart/form-data'
         },
         body: json.encode({
-          identity: this.identity,
-          account: this.account,
-          password: this.password,
-          'origin': 'pw2',
-          'key': ''
+          'identity': this.identity,
+          'account': this.account,
+          'password': this.password,
+          'origin': 'pw2'
         })
       );
 
