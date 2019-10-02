@@ -86,6 +86,7 @@ class _HomeState extends State<Home> {
                         child: TextFormField(
                           textInputAction: TextInputAction.next,
                           focusNode: _passwordNode,
+                          obscureText: true,
                           onSaved: (val) {
                             setState(() {
                               _user.password = val;
