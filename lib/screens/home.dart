@@ -1,5 +1,6 @@
 import 'package:ahgora/models/user.dart';
 import 'package:flutter/material.dart';
+import 'dart:convert';
 
 class Home extends StatefulWidget {
   @override
@@ -42,10 +43,20 @@ class _HomeState extends State<Home> {
                           onFieldSubmitted: (term) {
                             _fieldFocusChange(context, _tokenNode, _userNode);
                           },
+                          onSaved: (val) {
+                            setState(() {
+                              _user.identity = val;
+                            });
+                          },
                           decoration: InputDecoration(
                             border: OutlineInputBorder(),
-                            labelText: 'Chave ',
+                            labelText: 'Chave Ahgora',
                           ),
+                          validator: (value) {
+                            return value.isEmpty
+                                ? 'Preencha com a chave obtida no localStorage em seu navegador já autenticado.'
+                                : null;
+                          },
                         ),
                       ),
                       Container(
@@ -57,9 +68,17 @@ class _HomeState extends State<Home> {
                             _fieldFocusChange(
                                 context, _userNode, _passwordNode);
                           },
+                          onSaved: (val) {
+                            setState(() {
+                              _user.account = val;
+                            });
+                          },
                           decoration: InputDecoration(
                               border: OutlineInputBorder(),
                               labelText: 'Usuário'),
+                          validator: (value) {
+                            return value.isEmpty ? 'Preencha o usuário.' : null;
+                          },
                         ),
                       ),
                       Container(
@@ -68,8 +87,16 @@ class _HomeState extends State<Home> {
                           textInputAction: TextInputAction.next,
                           focusNode: _passwordNode,
                           obscureText: true,
+                          onSaved: (val) {
+                            setState(() {
+                              _user.password = val;
+                            });
+                          },
                           decoration: InputDecoration(
                               border: OutlineInputBorder(), labelText: 'Senha'),
+                          validator: (value) {
+                            return value.isEmpty ? 'Preencha a senha.' : null;
+                          },
                         ),
                       ),
                       Container(
@@ -77,7 +104,22 @@ class _HomeState extends State<Home> {
                         child: MaterialButton(
                           color: Colors.redAccent,
                           textColor: Colors.white,
-                          onPressed: () => {},
+                          onPressed: () {
+                            final form = _formKey.currentState;
+                            if (form.validate()) {
+                              form.save();
+                              _user.register().then((response) {
+                                if (response.statusCode == 200 && json.decode(response.body).error != true) {
+                                  final snackbar = SnackBar(content: Text('Ponto registrado'));
+                                  Scaffold.of(context).showSnackBar(snackbar);
+                                }
+                                else {
+                                  final snackbar = SnackBar(content: Text('Erro ao bater ponto, confira os dados. Mensagem: ' + json.decode(response.body).message));
+                                  Scaffold.of(context).showSnackBar(snackbar);
+                                }
+                              });
+                            }
+                          },
                           child: Text('Registrar'),
                         ),
                       )
