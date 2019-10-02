@@ -67,6 +67,7 @@ class _HomeState extends State<Home> {
                         child: TextFormField(
                           textInputAction: TextInputAction.next,
                           focusNode: _passwordNode,
+                          obscureText: true,
                           decoration: InputDecoration(
                               border: OutlineInputBorder(), labelText: 'Senha'),
                         ),
