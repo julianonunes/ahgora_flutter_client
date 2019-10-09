@@ -139,7 +139,8 @@ class _HomeState extends State<Home> {
                                   var batidas = '';
                                   if (body.containsKey('batidas_dia')) {
                                     for (var i = 0; i < body['batidas_dia'].length; i++) {
-                                      batidas += batidas + '   ' + body['batidas_dia'][i];
+                                      batidas += batidas + '   ' + body['batidas_dia'][i].substring(0,2) + ':'
+                                        + body['batidas_dia'][i].substring(2,4);
                                     }
                                   }
                                   final snackbar = SnackBar(content: Text('Ponto registrado - ' + batidas));
